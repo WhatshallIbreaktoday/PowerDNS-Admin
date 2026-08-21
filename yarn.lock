@@ -35,12 +35,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"admin-lte@npm:4.3.1":
-  version: 4.3.1
-  resolution: "admin-lte@npm:4.3.1"
+"admin-lte@npm:4.4.1":
+  version: 4.4.1
+  resolution: "admin-lte@npm:4.4.1"
   peerDependencies:
     bootstrap: ^5.3.8
-  checksum: 10c0/6ae081d245b01e355fa17d079bc834d081b68d094824ebcaf0d758a48e40010619fb0b3b8260f508ec67164f3440bad7eee6231a4de216a3c4377a0b991fc583
+  checksum: 10c0/e2cb908c4aa879cb37aebe521e252e64998cb63e32c032777c2bcb46a60158dd8e6f76af7f03ca4ecbeafca982f39b2e48595d27e2c7fc73c307ae6e8a2c2415
   languageName: node
   linkType: hard
 
@@ -127,7 +127,7 @@ __metadata:
   dependencies:
     "@fortawesome/fontawesome-free": "npm:7.3.1"
     "@popperjs/core": "npm:2.11.8"
-    admin-lte: "npm:4.3.1"
+    admin-lte: "npm:4.4.1"
     bootstrap: "npm:5.3.8"
     datatables.net: "npm:1.13.11"
     datatables.net-bs5: "npm:1.13.11"
