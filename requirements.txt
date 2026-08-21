@@ -20,7 +20,7 @@ cryptography==50.0.0
 #cssmin==0.2.0
 dnspython==2.8.0
 flask_session_captcha==1.5.0
-gunicorn==26.0.0
+gunicorn==26.1.0
 itsdangerous==2.2.0
 #jsonschema[format]>=2.5.1,<4.0.0 # until https://github.com/Yelp/bravado-core/pull/385
 jsonschema==4.26.0
