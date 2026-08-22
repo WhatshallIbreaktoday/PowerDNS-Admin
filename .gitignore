@@ -48,6 +48,7 @@ powerdnsadmin/static/generated
 .webassets-cache
 .venv*
 venv*
+.yarn
 .pytest_cache
 playwright-report
 test-results/browser
