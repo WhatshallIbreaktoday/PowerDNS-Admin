@@ -25,7 +25,7 @@ itsdangerous==2.2.0
 #jsonschema[format]>=2.5.1,<4.0.0 # until https://github.com/Yelp/bravado-core/pull/385
 jsonschema==4.26.0
 lima==0.5
-lxml==6.1.1
+lxml==6.1.2
 mysqlclient==2.2.8
 #passlib==1.7.4
 pyasn1==0.6.4
