@@ -263,7 +263,7 @@ jobs:
       should_build: ${{ steps.changes.outputs.should_build }}
     steps:
       - name: Checkout repository history
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
