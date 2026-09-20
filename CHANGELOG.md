@@ -4,14 +4,27 @@
 
 ### Bug Fixes
 
--   Editing an account can once again assign zones and users. The account
     editor no longer attempts to read the disabled account-name field from the
     submitted form, which caused Werkzeug to return HTTP 400 before saving the
     associations. (`#1913`)
--   The changelog now handles PowerDNS RRset history entries with missing or
     null comment metadata, legacy delete-only entries, and corrupt history
     details without returning HTTP 500. RRset history is normalized
     consistently for new API changes and existing database entries. (`#1915`)
+
+### Tests
+
+#### API
+
+-   Expanded API authorization regression coverage for domain and account-scoped
+    API keys, account-to-zone inheritance, tenant isolation, privileged role
+    scope bypass, and User/Operator privilege-escalation boundaries.
+-   Added Basic Auth User coverage for direct domain grants, account-derived
+    zone access, and unrelated-account isolation. Denied API-key access is now
+    exercised across `GET`, `PUT`, `PATCH`, and `DELETE` zone-subpath methods.
+-   Added an authorization matrix with credential-type metadata and executable
+    test references so matrix rows fail validation when their linked tests are
+    missing or renamed. The covered matrix is validated in the Docker Compose
+    test suite.
 
 ## [2026.08.1] - 2026-08-30
 
