@@ -59,12 +59,12 @@ def get_record_changes(del_rrset, add_rrset):
         if old['content'] != new['content']:
             raise ValueError("Can't compare records with different content")
         # check everything except the content
-        return old['disabled'] == new['disabled'] and old['comment'] == new['comment']
+        return old.get('disabled', False) == new.get('disabled', False) and old['comment'] == new['comment']
 
     def to_state(record):
         """For the given record, return the state dict."""
         return {
-            "disabled": record['disabled'],
+            "disabled": record.get('disabled', False),
             "content": record['content'],
             "comment": record.get('comment', ''),
         }

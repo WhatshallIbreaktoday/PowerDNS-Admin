@@ -150,3 +150,28 @@ def test_history_record_entry_normalizes_nullable_rrsets():
     entry = HistoryRecordEntry(history, {}, add_rrset, '+')
 
     assert entry.add_rrset['comments'] == []
+
+def test_extract_changelogs_accepts_record_without_disabled():
+    detail = {
+        'add_rrsets': [
+            rrset([{
+                'content': '192.0.2.1',
+            }], None)
+        ],
+        'del_rrsets': [],
+    }
+    history = SimpleNamespace(detail=json.dumps(detail))
+
+    changes = extract_changelogs_from_history([history])
+
+    assert changes[0].changeSet == [
+        (
+            None,
+            {
+                'disabled': False,
+                'content': '192.0.2.1',
+                'comment': None,
+            },
+            'addition'
+        )
+    ]
