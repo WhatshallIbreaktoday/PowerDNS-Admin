@@ -65,14 +65,14 @@ def test_build_database_uri_encodes_unsafe_password(clean_database_env, monkeypa
 
 
 def test_build_database_uri_supports_postgres_and_ipv6(clean_database_env, monkeypatch):
-    monkeypatch.setenv('DATABASE_DRIVER', 'postgres')
+    monkeypatch.setenv('DATABASE_DRIVER', 'postgresql+psycopg2')
     monkeypatch.setenv('DATABASE_USER', 'pda')
     monkeypatch.setenv('DATABASE_PASSWORD', 'changeme')
     monkeypatch.setenv('DATABASE_HOST', '2001:db8::1')
     monkeypatch.setenv('DATABASE_NAME', 'powerdnsadmin')
 
     assert AppSettings.build_database_uri_from_environment() == (
-        'postgresql://pda:changeme@[2001:db8::1]/powerdnsadmin')
+        'postgresql+psycopg2://pda:changeme@[2001:db8::1]/powerdnsadmin')
 
 
 def test_build_database_uri_reads_password_file(
