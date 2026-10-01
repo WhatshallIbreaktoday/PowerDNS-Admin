@@ -10,7 +10,7 @@ Flask-Session==0.8.0
 Flask==3.1.3
 Jinja2==3.1.6
 PyYAML==6.0.3
-SQLAlchemy==2.0.54
+SQLAlchemy==2.1.1
 bcrypt==5.0.0
 bravado-core==6.4.1
 certifi==2026.7.22
@@ -33,7 +33,7 @@ pyotp==2.10.0
 python-ldap==3.4.8
 python3-saml==1.16.0
 pytimeparse==1.1.8
-pytz==2026.3.post1
+#pytz==2026.3.post1
 qrcode==8.2
 requests==2.34.2
 rjsmin==1.2.5

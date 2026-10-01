@@ -634,8 +634,8 @@ class AppSettings(object):
     DATABASE_DRIVER_SCHEMES = {
         'mysql': 'mysql',
         'mariadb': 'mysql',
-        'postgres': 'postgresql',
-        'postgresql': 'postgresql',
+        'postgres': 'postgresql+psycopg2',
+        'postgresql': 'postgresql+psycopg2',
         'sqlite': 'sqlite',
     }
 
