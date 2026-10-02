@@ -1,4 +1,4 @@
-ARG DEBIAN_VERSION=13.6
+ARG DEBIAN_VERSION=13.7
 ARG PYTHON_FULL_VERSION=3.13.5
 ARG PYTHON_PATCH_LEVEL=5
 
@@ -20,6 +20,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Compilers, headers, Node, and Yarn are build-time dependencies only. The
 # runtime stage below receives the completed venv and generated assets.
 RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         build-essential \
         libffi-dev \
@@ -88,6 +89,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Only libraries needed by the compiled Python packages and scenario scripts
 # are installed in the final image.
 RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
