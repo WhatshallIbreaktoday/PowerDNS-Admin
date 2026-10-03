@@ -4,20 +4,37 @@
 
 ### Bug Fixes
 
-    editor no longer attempts to read the disabled account-name field from the
-    submitted form, which caused Werkzeug to return HTTP 400 before saving the
-    associations. (`#1913`)
-    null comment metadata, legacy delete-only entries, and corrupt history
-    details without returning HTTP 500. RRset history is normalized
-    consistently for new API changes and existing database entries. (`#1915`)
+-   Fixed record-change handling for missing `disabled` fields and updated the
+    related test coverage.
+-   Fixed account-edit regressions and the editor path that attempted to read the
+    disabled account-name field from the submitted form, preventing HTTP 400
+    responses before saving associations. (`#1913`)
+-   Fixed nullable RRset comment metadata, legacy delete-only entries, and
+    corrupt history details so RRset history is normalized without returning
+    HTTP 500. (`#1915`)
+-   Fixed the session mutation triggered by `/healthcheck`, which was resetting
+    the global session lifetime instead of only checking service health.
+    (`#1905`)
+
+### Dependencies and Platform Updates
+
+-   Updated the Debian base image and Docker image dependencies to Debian 13.7
+    with package upgrades.
+-   Updated Werkzeug to 3.1.9.
+-   Updated the PostgreSQL driver and SQLAlchemy versions for compatibility with
+    the current database stack.
+-   Bumped Terraform version constraints and the supported maximum Terraform
+    version.
+-   Refreshed `admin-lte`, `bcrypt`, `qrcode`, `psycopg2`, GitHub Actions, and
+    related pip/docker dependency groups across the project.
 
 ### Tests
 
 #### API
 
--   Expanded API authorization regression coverage for domain and account-scoped
-    API keys, account-to-zone inheritance, tenant isolation, privileged role
-    scope bypass, and User/Operator privilege-escalation boundaries.
+-   Expanded API authorization regression coverage for domain- and account-
+    scoped API keys, account-to-zone inheritance, tenant isolation, privileged
+    role-scope bypass, and User/Operator privilege-escalation boundaries.
 -   Added Basic Auth User coverage for direct domain grants, account-derived
     zone access, and unrelated-account isolation. Denied API-key access is now
     exercised across `GET`, `PUT`, `PATCH`, and `DELETE` zone-subpath methods.
