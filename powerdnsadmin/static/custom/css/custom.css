@@ -219,6 +219,20 @@ table td {
     display: none !important;
 }
 
+[data-bs-theme="dark"] #review-unsaved-changes {
+    color: #fff;
+    border-color: #fff;
+    background-color: transparent;
+}
+
+[data-bs-theme="dark"] #review-unsaved-changes:hover,
+[data-bs-theme="dark"] #review-unsaved-changes:focus,
+[data-bs-theme="dark"] #review-unsaved-changes:active {
+    color: #fff;
+    border-color: #fff;
+    background-color: #495057;
+}
+
 .pda-navbar-search-icon-close {
     display: none;
 }
