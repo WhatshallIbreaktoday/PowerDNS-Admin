@@ -429,12 +429,14 @@
 
             // add new row
             var default_type = records_allow_edit[0]
+            var table = $("#tbl_records").DataTable();
             {% if current_user.role.name in ['Administrator', 'Operator'] or allow_user_view_history %}
-                var nRow = jQuery('#tbl_records').dataTable().fnAddData(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '', '0']);
+                var addedRow = table.row.add(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '', '0']).draw(false);
             {% else %}
-                var nRow = jQuery('#tbl_records').dataTable().fnAddData(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '0']);
+                var addedRow = table.row.add(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '0']).draw(false);
             {% endif %}
-            editRow($("#tbl_records").DataTable(), nRow);
+            var nRow = addedRow.node();
+            editRow(table, nRow);
             document.getElementById("edit-row-focus").focus();
             nEditing = nRow;
             nNew = true;

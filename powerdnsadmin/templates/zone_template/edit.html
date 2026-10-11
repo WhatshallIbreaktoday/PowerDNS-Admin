@@ -231,7 +231,9 @@
 
             // add new row
             var default_type = records_allow_edit[0]
-            var nRow = jQuery('#tbl_records').dataTable().fnAddData(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '0']);
+            var table = $("#tbl_records").DataTable();
+            var addedRow = table.row.add(['', default_type, 'Active', window.ttl_options[0][0], '', '', '', '', '0']).draw(false);
+            var nRow = addedRow.node();
             editRow($("#tbl_records").DataTable(), nRow);
             document.getElementById("edit-row-focus").focus();
             nEditing = nRow;

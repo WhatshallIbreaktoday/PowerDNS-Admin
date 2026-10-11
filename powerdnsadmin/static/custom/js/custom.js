@@ -38,6 +38,10 @@ var DATATABLE_DEFAULTS = {
     "autoWidth": false
 };
 
+if ($.fn.dataTable) {
+    $.fn.dataTable.defaults.column.orderSequence = ['asc', 'desc'];
+}
+
 function initDataTable(selector, options) {
     return $(selector).DataTable($.extend(true, {}, DATATABLE_DEFAULTS, options || {}));
 }
@@ -602,7 +606,7 @@ function sec2str(t){
 function editRow(oTable, nRow) {
     var isDisabled = 'true';
     var aData = oTable.row(nRow).data();
-    var jqTds = oTable.cells(nRow,'').nodes();
+    var jqTds = oTable.cells(nRow, '*').nodes();
     var record_types = "";
     var ttl_opts = "";
     var ttl_not_found = true;

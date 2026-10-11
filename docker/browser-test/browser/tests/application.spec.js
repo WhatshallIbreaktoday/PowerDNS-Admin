@@ -231,7 +231,7 @@ test('authenticated pages render without browser or layout failures', async ({ p
   expect(failures, failures.join('\n')).toEqual([]);
 });
 
-test('zone template record fields remain readable while editing', async ({ page }, testInfo) => {
+test('zone template records can be cancelled, saved, and edited readably', async ({ page }, testInfo) => {
   const templateName = `layout-${testInfo.project.name}`;
 
   await page.goto('/admin/templates', { waitUntil: 'networkidle' });
@@ -277,10 +277,154 @@ test('zone template record fields remain readable while editing', async ({ page 
     await expect(editRow.locator(`#${fieldId}`)).toHaveClass(/form-select/);
   }
 
+  await editRow.locator('.button_cancel').click();
+  await expect(page.locator('#tbl_records tbody tr:has(#record_type)')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Add Record/i }).click();
+  const savedEditRow = page.locator('#tbl_records tbody tr:has(#record_type)');
+  const recordName = `browser-${testInfo.project.name}`;
+  await savedEditRow.locator('#edit-row-focus').fill(recordName);
+  await savedEditRow.locator('#current_edit_record_data').fill('192.0.2.20');
+  await savedEditRow.locator('.button_save').click();
+  await expect(page.locator('#tbl_records tbody tr:has(#record_type)')).toHaveCount(0);
+
+  const savedRow = page.locator('#tbl_records tbody tr').filter({ hasText: recordName });
+  await expect(savedRow).toHaveCount(1);
+  await expect(savedRow).toContainText('192.0.2.20');
+
+  const tableSearch = page.locator('#tbl_records_wrapper .dt-search input');
+  await tableSearch.fill('no matching record');
+  await expect(savedRow).toHaveCount(0);
+  await page.getByRole('button', { name: /Add Record/i }).click();
+  await expect(tableSearch).toHaveValue('');
+  const replacementEditRow = page.locator('#tbl_records tbody tr:has(#record_type)');
+  await expect(replacementEditRow).toHaveCount(1);
+  await replacementEditRow.locator('.button_cancel').click();
+
   const pageOverflow = await page.evaluate(() => (
     document.documentElement.scrollWidth - document.documentElement.clientWidth
   ));
   expect(pageOverflow).toBeLessThanOrEqual(1);
+});
+
+test('dashboard v2 table controls search, sort, page, and fit on mobile', async ({ page }) => {
+  const zones = Array.from({ length: 12 }, (_, index) => {
+    const name = `table-${String(index + 1).padStart(2, '0')}.example`;
+    return {
+      id: index + 1,
+      name,
+      dnssec: false,
+      type: 'Master',
+      serial: 100 + index,
+      notifiedSerial: 100 + index,
+      primary: '',
+      account: 'Browser Test',
+      permissions: {
+        manageZone: true,
+        viewHistory: true,
+        removeZone: true,
+        manageDnssec: true,
+      },
+      urls: {
+        records: `/domain/${name}`,
+        settings: `/domain/${name}/setting`,
+        changelog: `/domain/${name}/changelog`,
+        remove: '/domain/remove',
+        dnssecEnableV2: `/dashboard/v2/dnssec/${name}/enable`,
+        dnssecStatusV2: `/dashboard/v2/dnssec/${name}/status`,
+      },
+    };
+  });
+
+  await page.route(/\/dashboard\/v2\/domains\/forward(?:\?.*)?$/, async (route) => {
+    const requestUrl = new URL(route.request().url());
+    const search = (requestUrl.searchParams.get('search[value]') || '').toLowerCase();
+    const sortColumn = Number(requestUrl.searchParams.get('order[0][column]') || 0);
+    const sortDirection = requestUrl.searchParams.get('order[0][dir]') || 'asc';
+    const sortFields = ['name', 'dnssec', 'type', 'serial', 'primary', 'account'];
+    const sortField = sortFields[sortColumn] || 'name';
+    const filteredZones = zones
+      .filter((zone) => zone.name.toLowerCase().includes(search))
+      .sort((left, right) => {
+        const leftValue = left[sortField];
+        const rightValue = right[sortField];
+        const comparison = typeof leftValue === 'string'
+          ? leftValue.localeCompare(rightValue)
+          : Number(leftValue) - Number(rightValue);
+        return sortDirection === 'desc' ? -comparison : comparison;
+      });
+    const start = Number(requestUrl.searchParams.get('start') || 0);
+    const length = Number(requestUrl.searchParams.get('length') || 10);
+
+    await route.fulfill({
+      json: {
+        draw: Number(requestUrl.searchParams.get('draw') || 0),
+        recordsTotal: zones.length,
+        recordsFiltered: filteredZones.length,
+        data: filteredZones.slice(start, start + length),
+      },
+    });
+  });
+
+  await page.goto('/dashboard/v2/', { waitUntil: 'networkidle' });
+
+  const table = page.locator('#tbl_domain_list_forward_v2');
+  await expect(table).toBeVisible();
+  const toolbar = page.locator('#tab_forward_v2 .dashboard-v2-table-toolbar');
+  const footer = page.locator('#tab_forward_v2 .dashboard-v2-table-footer');
+  const search = toolbar.getByRole('searchbox', { name: 'Search zones' });
+  const pageLength = toolbar.getByRole('combobox', { name: 'Rows per page' });
+  await expect(search).toHaveAttribute(
+    'placeholder',
+    'Search zones — use ^ and $ for start and end',
+  );
+  await expect(pageLength).toBeVisible();
+  await pageLength.selectOption('10');
+  await expect(table.locator('tbody tr')).toHaveCount(10);
+  await expect(footer).toContainText(/Showing 1.*10 of 12 zones/);
+  await expect(footer.getByText('Next', { exact: true })).toBeVisible();
+
+  await footer.getByText('Next', { exact: true }).click();
+  await expect(table.locator('tbody tr')).toHaveCount(2);
+  await expect(footer).toContainText(/Showing 11.*12 of 12 zones/);
+  await footer.getByText('Prev', { exact: true }).click();
+  await expect(table.locator('tbody tr')).toHaveCount(10);
+
+  await pageLength.selectOption('25');
+  await expect(table.locator('tbody tr')).toHaveCount(12);
+  await expect(footer).toContainText('Showing 12 of 12 zones');
+
+  await table.locator('thead th').nth(0).click();
+  await expect(table.locator('tbody tr').first()).toContainText('table-12.example');
+  await table.locator('thead th').nth(0).click();
+  await expect(table.locator('tbody tr').first()).toContainText('table-01.example');
+  const sortIndicator = await table.locator('thead th').nth(0).evaluate(
+    (header) => getComputedStyle(header.querySelector('.dt-column-order'), '::after').content,
+  );
+  expect(sortIndicator).toBe('"↑"');
+  await table.locator('thead th').nth(0).click();
+  await expect(table.locator('tbody tr').first()).toContainText('table-12.example');
+  const descendingIndicator = await table.locator('thead th').nth(0).evaluate(
+    (header) => getComputedStyle(header.querySelector('.dt-column-order'), '::after').content,
+  );
+  expect(descendingIndicator).toBe('"↓"');
+
+  await search.fill('table-11');
+  await expect(table.locator('tbody tr')).toHaveCount(1);
+  await expect(table.locator('tbody tr').first()).toContainText('table-11.example');
+  await expect(footer).toContainText('Showing 1 of 1 zones');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(toolbar.getByRole('searchbox', { name: 'Search zones' })).toBeVisible();
+  await expect(toolbar.getByRole('combobox', { name: 'Rows per page' })).toBeVisible();
+  await expect(footer).toContainText('Showing 1 of 1 zones');
+  await expect(
+    page.locator('#tab_forward_v2 .dt-layout-table'),
+  ).toHaveCSS('overflow-x', 'auto');
+  const horizontalOverflow = await page.evaluate(() => (
+    document.documentElement.scrollWidth - document.documentElement.clientWidth
+  ));
+  expect(horizontalOverflow).toBeLessThanOrEqual(1);
 });
 
 test('theme toggle switches between auto, light, and dark modes', async ({ page }) => {
