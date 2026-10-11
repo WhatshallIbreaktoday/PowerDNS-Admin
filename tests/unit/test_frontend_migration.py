@@ -337,12 +337,18 @@ def test_zone_editor_uses_a_persistent_unsaved_changes_banner():
     assert 'id="review-unsaved-changes"' in template
     assert "classList.toggle('is-visible', unsavedChanges)" in template
     assert "document.querySelector('.button_apply_changes').click()" in template
-    assert "getZoneEditorScrollContainer()" in template
-    assert "scrollContainer.scrollTo" in template
-    assert "editorHeading.focus({ preventScroll: true })" in template
+    assert 'id="modal_review_changes"' in template
+    assert 'id="review-changes-body"' in template
+    assert "className = 'diff diff-' + value[0]" in template
+    assert "var originalZoneRecords = getTableData($("# in template
+    assert 'function updateUnsavedChangesBannerPosition()' in template
+    assert 'appMain.addEventListener(\'scroll\', updateUnsavedChangesBannerPosition' in template
+    assert 'window.addEventListener(\'scroll\', updateUnsavedChangesBannerPosition' in template
+    assert 'window.addEventListener(\'resize\', updateUnsavedChangesBannerPosition)' in template
     assert 'unsaved-changes-card' not in template
     assert '.pda-unsaved-banner {' in stylesheet
     assert '.pda-unsaved-banner.is-floating {' in stylesheet
+    assert '.pda-unsaved-banner-anchor {' not in stylesheet
     assert 'position: fixed;' in stylesheet
     assert '--pda-banner-left' in stylesheet
     assert '.pda-unsaved-banner.is-visible {' in stylesheet

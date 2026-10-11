@@ -369,15 +369,26 @@ test('creates and submits project-specific core DNS records', async ({ page, req
       window.scrollTo(0, document.body.scrollHeight);
     }
   });
+  await expect(banner).toBeVisible();
   await expect(banner).toHaveClass(/is-floating/);
+  const floatingPosition = await banner.evaluate((element) => ({
+    position: getComputedStyle(element).position,
+    top: element.getBoundingClientRect().top,
+  }));
+  expect(floatingPosition.position).toBe('fixed');
+  expect(floatingPosition.top).toBeGreaterThanOrEqual(0);
   await banner.getByRole('button', { name: 'Review Changes' }).click();
-  await expect(page.locator('#tbl_records')).toBeInViewport();
+  const reviewModal = page.locator('#modal_review_changes');
+  await expect(reviewModal).toBeVisible();
+  await expect(reviewModal.locator('#review-changes-body tr')).not.toHaveCount(0);
+  await reviewModal.locator('.modal-footer').getByRole('button', { name: 'Close' }).click();
+  await expect(banner).toHaveClass(/is-floating/);
 
   const applyResponsePromise = page.waitForResponse(
     (response) => response.url().includes(`/domain/${TEST_ZONE}/apply`)
       && response.request().method() === 'POST',
   );
-  await page.locator('.button_apply_changes').click();
+  await banner.getByRole('button', { name: 'Apply Changes' }).click();
   await expect(page.locator('#modal_apply_changes')).toBeVisible();
   await page.locator('#button_apply_confirm').click();
 

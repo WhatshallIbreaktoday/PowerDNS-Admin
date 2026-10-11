@@ -36,6 +36,10 @@ function normalizedDiagnosticText(text) {
 const test = base.extend({
   consoleAudit: async ({ browser }, use, testInfo) => {
     const entries = new Map();
+    const family = browserFamily(
+      testInfo.project.name,
+      browser.browserType().name(),
+    );
     const expectedMessages = [
       {
         type: 'warning',
@@ -48,11 +52,14 @@ const test = base.extend({
         pattern: /Layout was forced before the page was fully loaded\./,
       },
     ];
+    if (family === 'firefox') {
+      expectedMessages.push({
+        source: 'console',
+        type: 'warning',
+        pattern: /This site appears to use a scroll-linked positioning effect\./,
+      });
+    }
     const monitoredPages = new WeakSet();
-    const family = browserFamily(
-      testInfo.project.name,
-      browser.browserType().name(),
-    );
     const browserVersion = browser.version();
 
     function recordDiagnostic(entry) {

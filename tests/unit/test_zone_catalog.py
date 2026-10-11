@@ -94,6 +94,16 @@ def test_powerdns_payload_omits_unselected_catalog(app):
     assert 'catalog' not in fetch_json.call_args.kwargs['data']
 
 
+def test_catalog_members_card_is_rendered_outside_unsaved_changes_banner():
+    domain = Path('powerdnsadmin/templates/domain.html').read_text()
+
+    assert domain.index('{% block page_header_after %}') < (
+        domain.index('id="unsaved-changes-banner-anchor"')
+    ) < domain.index('{% block content %}') < (
+        domain.index('id="catalog-members-card"')
+    )
+
+
 def test_catalog_templates_use_adminlte_4_and_bootstrap_5_markup():
     domain = Path('powerdnsadmin/templates/domain.html').read_text()
     domain_add = Path('powerdnsadmin/templates/domain_add.html').read_text()

@@ -26,7 +26,18 @@
                             </button>
                         </div>
                     </div>
-                    {% if catalog_members is not none %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <section class="content">
+        <div class="container-fluid">
+            {% if catalog_members is not none %}
+                <div class="row mb-3">
+                    <div class="col-12">
                         <div class="card card-outline card-info shadow" id="catalog-members-card">
                             <div class="card-header">
                                 <h3 class="card-title">Catalog Member Zones</h3>
@@ -96,16 +107,9 @@
                                 </table>
                             </div>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-{% endblock %}
-
-{% block content %}
-    <section class="content">
-        <div class="container-fluid">
+            {% endif %}
             <div class="row">
                 <div class="col-12">
                     <div class="card" id="zone-editor-card">
@@ -303,6 +307,7 @@
                 "orderFixed": [[5, 'asc']]
             {% endif %}
         });
+        var originalZoneRecords = getTableData($("#tbl_records").DataTable());
 
         {% if catalog_members is not none %}
             initDataTable("#tbl_catalog_members", {
@@ -473,7 +478,6 @@
         var unsavedChangesBanner = document.getElementById('unsaved-changes-banner');
         var unsavedChangesBannerAnchor = document.getElementById('unsaved-changes-banner-anchor');
         var appMain = document.querySelector('.app-main');
-
         function updateUnsavedChangesBannerPosition() {
             if (!unsavedChanges) {
                 unsavedChangesBanner.classList.remove('is-floating');
@@ -504,34 +508,108 @@
         window.addEventListener('scroll', updateUnsavedChangesBannerPosition, { passive: true });
         window.addEventListener('resize', updateUnsavedChangesBannerPosition);
 
-        function getZoneEditorScrollContainer() {
-            var appMainStyle = window.getComputedStyle(appMain);
-            var appMainScrolls = /(auto|scroll)/.test(appMainStyle.overflowY) &&
-                appMain.scrollHeight > appMain.clientHeight;
-            return appMainScrolls ? appMain : document.scrollingElement;
-        }
-
         document.getElementById('apply-unsaved-changes').addEventListener('click', function () {
             document.querySelector('.button_apply_changes').click();
         });
 
         document.getElementById('review-unsaved-changes').addEventListener('click', function () {
-            var editor = document.getElementById('zone-editor-card');
-            var editorHeading = document.getElementById('zone-editor-heading');
-            var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            var bannerHeight = unsavedChangesBanner.offsetHeight;
-            var scrollContainer = getZoneEditorScrollContainer();
-            var editorRect = editor.getBoundingClientRect();
-            var containerTop = scrollContainer === appMain
-                ? appMain.getBoundingClientRect().top
-                : 0;
-            var targetTop = scrollContainer.scrollTop + editorRect.top - containerTop - bannerHeight - 12;
+            if (nNew || nEditing) {
+                showErrorModal("Save or cancel the record you are editing before reviewing changes.");
+                return;
+            }
 
-            editorHeading.focus({ preventScroll: true });
-            scrollContainer.scrollTo({
-                top: Math.max(0, targetTop),
-                behavior: reducedMotion ? 'auto' : 'smooth'
+            var table = $("#tbl_records").DataTable();
+            var currentRecords = getTableData(table);
+            var originalRemaining = originalZoneRecords.map(function (record) {
+                return Object.assign({}, record);
             });
+            var currentRemaining = currentRecords.map(function (record) {
+                return Object.assign({}, record);
+            });
+            var columns = [
+                ["record_name", "Name"],
+                ["record_type", "Type"],
+                ["record_ttl", "TTL"],
+                ["record_data", "Data"],
+                ["record_status", "Status"],
+                ["record_comment", "Comment"]
+            ];
+            var changesBody = document.getElementById('review-changes-body');
+            var noChangesMessage = document.getElementById('review-changes-empty');
+            changesBody.replaceChildren();
+
+            function recordMatches(left, right) {
+                return columns.every(function (column) {
+                    return left[column[0]] === right[column[0]];
+                });
+            }
+
+            function appendDiffCell(row, oldValue, newValue, mode) {
+                var cell = row.insertCell();
+                var values = mode === 'addition' ? [['addition', newValue]]
+                    : mode === 'deletion' ? [['deletion', oldValue]]
+                    : oldValue === newValue ? [['unchanged', newValue]]
+                    : [['deletion', oldValue], ['addition', newValue]];
+
+                values.forEach(function (value) {
+                    if (value[1] === '' && value[0] !== 'unchanged') {
+                        return;
+                    }
+                    var diff = document.createElement('div');
+                    diff.className = 'diff diff-' + value[0];
+                    diff.textContent = value[1];
+                    cell.appendChild(diff);
+                });
+            }
+
+            function appendDiffRow(oldRecord, newRecord, mode) {
+                var row = changesBody.insertRow();
+                columns.forEach(function (column) {
+                    appendDiffCell(
+                        row,
+                        oldRecord ? oldRecord[column[0]] : '',
+                        newRecord ? newRecord[column[0]] : '',
+                        mode
+                    );
+                });
+            }
+
+            currentRemaining.forEach(function (record) {
+                var matchIndex = originalRemaining.findIndex(function (original) {
+                    return recordMatches(original, record);
+                });
+                if (matchIndex !== -1) {
+                    originalRemaining.splice(matchIndex, 1);
+                    record._matched = true;
+                }
+            });
+            currentRemaining = currentRemaining.filter(function (record) {
+                return !record._matched;
+            });
+
+            originalRemaining.forEach(function (original) {
+                var matchIndex = currentRemaining.findIndex(function (record) {
+                    return original.record_name === record.record_name &&
+                        original.record_type === record.record_type;
+                });
+                if (matchIndex === -1) {
+                    appendDiffRow(original, null, 'deletion');
+                    return;
+                }
+                appendDiffRow(original, currentRemaining[matchIndex], 'edit');
+                currentRemaining.splice(matchIndex, 1);
+            });
+
+            currentRemaining.forEach(function (record) {
+                appendDiffRow(null, record, 'addition');
+            });
+
+            noChangesMessage.classList.toggle('d-none', changesBody.rows.length > 0);
+            document.getElementById('review-changes-table').classList.toggle(
+                'd-none',
+                changesBody.rows.length === 0
+            );
+            showModal('#modal_review_changes');
         });
 
         // Bind navigation protection once. detectUnsavedChanges() only updates
@@ -614,6 +692,47 @@
 {% endblock %}
 
 {% block modals %}
+    <div class="modal fade" id="modal_review_changes" tabindex="-1"
+         aria-labelledby="modal_review_changes_label" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modal_review_changes_label">Review Zone Changes</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="review-changes-empty" class="alert alert-info d-none mb-0">
+                        There are no record changes to review.
+                    </p>
+                    <div class="table-responsive">
+                        <table id="review-changes-table" class="table table-bordered table-striped d-none">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>TTL</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Comment</th>
+                            </tr>
+                            </thead>
+                            <tbody id="review-changes-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex gap-3 small">
+                        <span><span class="diff diff-deletion">Removed</span></span>
+                        <span><span class="diff diff-addition">Added</span></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-window-close"></i>&nbsp;Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="modal_delete" tabindex="-1"
          aria-labelledby="modal_delete_label" aria-hidden="true">
         <div class="modal-dialog">

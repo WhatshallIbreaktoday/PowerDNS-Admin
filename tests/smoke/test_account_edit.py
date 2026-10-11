@@ -15,6 +15,35 @@ def csrf_token(response):
     return match.group(1).decode('utf-8')
 
 
+def test_edit_account_submit_button_uses_save_label(app, logged_in_admin_client):
+    with app.app_context():
+        account = Account(
+            name='account-edit-save-label',
+            description='Original description',
+            contact='Original contact',
+            mail='original@example.com',
+        )
+        assert account.create_account()['status']
+        account_name = account.name
+
+    edit_page = logged_in_admin_client.get(
+        '/admin/account/edit/{}'.format(account_name))
+    assert edit_page.status_code == 200
+
+    html = edit_page.get_data(as_text=True)
+    assert 'Edit Account' in html
+    assert '<title>Edit Account - ' in html
+
+    match = re.search(
+        r'<button[^>]*type="submit"[^>]*title="([^"]+)"[^>]*>\s*([^<]+?)\s*</button>',
+        html,
+        re.DOTALL,
+    )
+    assert match is not None
+    assert match.group(1) == 'Save Account'
+    assert match.group(2).strip() == 'Save Account'
+
+
 def test_edit_account_assigns_domain_and_user_without_posted_account_name(
         app, logged_in_admin_client, monkeypatch):
     submitted_account_name = 'account-edit-regression'
