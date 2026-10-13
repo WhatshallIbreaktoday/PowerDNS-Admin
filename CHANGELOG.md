@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Features
+
+-   Updated DataTables and its Bootstrap 5 integration, migrating dashboard
+    controls and record-row editing to the current APIs.
+
 ### Bug Fixes
 
 -   Fixed record-change handling for missing `disabled` fields and updated the
