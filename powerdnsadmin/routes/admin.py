@@ -1690,6 +1690,7 @@ def edit_template(template):
                 methods=['POST'],
                 strict_slashes=False)
 @login_required
+@operator_role_required
 def apply_records(template):
     try:
         jdata = request.json

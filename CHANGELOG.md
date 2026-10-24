@@ -9,6 +9,10 @@
 
 ### Bug Fixes
 
+-   Prevented secondary-zone refresh requests from using a body-supplied zone
+    to bypass authorization for the zone in the URL. (`#1940`)
+-   Restricted changes to shared zone-template records to Operators and
+    Administrators.
 -   Fixed record-change handling for missing `disabled` fields and updated the
     related test coverage.
 -   Fixed account-edit regressions and the editor path that attempted to read the
