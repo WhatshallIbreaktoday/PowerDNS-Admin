@@ -82,6 +82,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"datatables.net@npm:3.1.5":
+  version: 3.1.5
+  resolution: "datatables.net@npm:3.1.5"
+  checksum: 10c0/0e94fab9da78a05f755c5d2983cc63632a6ef91ff4fa4c4d2b35bda91f8a8cc68185d7595308fc4429a50ebbeed4b969a41d25a51f612f1c6fa952b7adddd98b
+  languageName: node
+  linkType: hard
+
 "jquery-validation@npm:^1.19.5":
   version: 1.22.1
   resolution: "jquery-validation@npm:1.22.1"
@@ -129,7 +136,7 @@ __metadata:
     "@popperjs/core": "npm:2.11.8"
     admin-lte: "npm:4.10.0"
     bootstrap: "npm:5.3.8"
-    datatables.net: "npm:1.13.11"
+    datatables.net: "npm:3.1.5"
     datatables.net-bs5: "npm:1.13.11"
     datatables.net-plugins: "npm:^1.13.1"
     jquery: "npm:^3.6.0"
